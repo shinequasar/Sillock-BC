@@ -1,4 +1,4 @@
-pragma solidity 0.7.4;
+pragma solidity ^0.5.6;
 
 
 // https://github.com/OpenZeppelin/openzeppelin-solidity/blob/v2.3.0/contracts/utils/Address.sol
