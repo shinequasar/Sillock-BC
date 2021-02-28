@@ -1,4 +1,7 @@
 ## SILLOCK Smartcontracts
 
 ### latest contract address (BAOBAB)
-0x64f0E13F3F81Fc996CD15D81e0743bA630758696
+0x345cA3e014Aaf5dcA488057592ee47305D9B3e10
+
+### Update contract
+`truffle deploy --compile-all --reset --network baobab`
