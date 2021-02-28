@@ -1,8 +1,8 @@
-pragma solidity ^0.5.6; // TODO : 0.5.6 stable for klaytn
+pragma solidity ^0.5.6;
 
-import "./ERC721/ERC721.sol";
+import "./ERC721/ERC721Enumerable.sol";
 
-contract CertToken is ERC721{
+contract CertToken is ERC721Enumerable{
     
     using SafeMath for uint8;
     using SafeMath for uint256;
@@ -36,13 +36,17 @@ contract CertToken is ERC721{
     mapping (address => uint256) private _address2EmptyCert; // TODO: 예상 발행량을 고려해야함
     mapping (address => AuthorizedIssuer) private _authorizedList;
     
-    address public owner;
-    uint256 private issueFee = 1; // TODO: KLAY!
+    address payable public owner;
+
+    // 1000000000000000000 Peb = klay
+    uint256 private issueFee;
 
     event NewCert(uint256 indexed certId, string indexed name, uint no, string url, address holder, address issuer, bool exchangable, bool authorized, uint date, uint now);    
-    
-    constructor() public{
+    event BurnCert(uint256 tokenId);
+
+    constructor() public {
         owner = msg.sender; // cert contract's owner
+        issueFee = 100000000000000000; // 0.1klay
     }
     
     
@@ -50,12 +54,20 @@ contract CertToken is ERC721{
         issueFee = _fee;
     }
 
-    function mintCard(string memory _name, address _holder, string memory _url, bool _exchangable, uint _date) public payable {
+    function changeExtContract(address _contractAddr) onlyOwner public{
+        require(_contractAddr != address(0));
+    }
+
+
+    function mintCert(string memory _name, address _holder, string memory _url, bool _exchangable, uint _date) public payable {
         
 
         // 발행하는 주체가 직접 호출해야 함
         address issuer = msg.sender;
-        useEmptyCert(issuer, 1);
+
+        require (_address2EmptyCert[issuer] >= 1, "You don't have enough Empty Certs.");
+        uint256 totalAmount = _address2EmptyCert[issuer].sub(1);
+        _address2EmptyCert[issuer] = totalAmount;
 
         uint256 certNo = _issuer2Certs[issuer][_name].length; // 해당 자격 종류 발행 No
         bool authorized = isAuthorized(issuer);
@@ -76,7 +88,6 @@ contract CertToken is ERC721{
             authorized  : authorized
         });
         
-
         _issuer2Certs[issuer][_name].push(tokenId);
         _id2Certs[tokenId] = newCert;
         _mint(_holder, tokenId); // 새 자격증 발행
@@ -84,30 +95,36 @@ contract CertToken is ERC721{
         emit NewCert(tokenId, _name, certNo, _url, _holder, issuer, _exchangable, authorized, _date, now);
     }
     
+    // TODO : 권한 holder, owner(byobl), issuer?
+    function burnCert(uint256 _tokenId) public{
+
+        Cert memory targetCert = _id2Certs[_tokenId];
+        require((msg.sender == owner || msg.sender == targetCert.issuer || msg.sender == targetCert.holder), "BURN ERROR, Permission Error");
+
+        _burn(targetCert.holder, _tokenId);
+
+        targetCert.holder = address(0);
+        _id2Certs[_tokenId] = targetCert;
+        emit BurnCert(_tokenId);
+
+    }
     
     function transferOwnership(uint256 _tokenId, address _to) public{
         // Check if Cert can be exchange
-        require(_id2Certs[_tokenId].exchangable);
+        Cert memory targetCert = _id2Certs[_tokenId];
+        require((msg.sender == owner || msg.sender == targetCert.issuer || msg.sender == targetCert.holder), "BURN ERROR, Permission Error");
+        require(_id2Certs[_tokenId].exchangable, "This token can't be exchanged");
 
-        safeTransferFrom(msg.sender, _to, _tokenId);
+        _transferFrom(msg.sender, _to, _tokenId);
+        targetCert.holder = _to;
+        _id2Certs[_tokenId] = targetCert;
     }
 
-
-    // function transferFrom(address from, address to, uint256 tokenId) public {
-    //     super.transferFrom(from, to, tokenId);
-    //     // TODO : change owner
-
-    // }
-
-    /*
-     * From klaystagram
-     * TODO: totalSupply?
     function getTotalCertCount () public view returns (uint) {
         return totalSupply();
     }
-    */
 
-    function getOneCert(uint _tokenId) public view
+    function getCert(uint _tokenId) public view
     returns(uint256, string memory, uint256, address, string memory, address, uint, uint, bool, bool){
         Cert memory targetCert = _id2Certs[_tokenId];
 
@@ -124,6 +141,7 @@ contract CertToken is ERC721{
             targetCert.authorized
         );
     }
+
 
     function isAuthorized(address _issuer) public view
     returns(bool){
@@ -142,18 +160,27 @@ contract CertToken is ERC721{
     }
 
     // 발행자가 발행할 수 있는 토큰을 추가함
-    // TODO: 다른 발행자가 해당 컨트랙트로 클레이를 보내도 결제가 가능하게 할지
-    function mintEmptyCert(address _issuer, uint256 _num) onlyOwner public payable{
+    function mintEmptyCert(address _issuer, uint256 _num) onlyOwner public{
         // 발행자의 주소를 받고 해당 주소와 매핑된 갯수를 한개 추가함
         uint256 totalAmount = _address2EmptyCert[_issuer].add(_num); // using SafeMath
         _address2EmptyCert[_issuer] = totalAmount;
     }
 
-    function useEmptyCert(address _issuer, uint256 _num) onlyOwner public{
-        require (_address2EmptyCert[_issuer] >= _num, "You don't have enough Empty Certs.");
+    // KLAY로 구입 가능
+    function buyEmptyCert(address _issuer, uint256 _num) public payable
+    returns(uint256){
+        
+        require(_num > 0, "Needs positive value");
 
-        uint256 totalAmount = _address2EmptyCert[_issuer].sub(_num); // using SafeMath
+        uint256 fee = _num.mul(issueFee);
+        require(msg.value > fee, "Not enough money");
+        
+        owner.transfer(fee); // transfer money to owner
+        
+        uint256 totalAmount = _address2EmptyCert[_issuer].add(_num); // using SafeMath
         _address2EmptyCert[_issuer] = totalAmount;
+
+        return totalAmount;
     }
 
     function returnEmptyCert(address _issuer) public view
@@ -163,17 +190,30 @@ contract CertToken is ERC721{
 
     function authorize(string memory _name, address _issuer, string memory _url) onlyOwner public{
         
-        AuthorizedIssuer memory newCert = AuthorizedIssuer({
+        AuthorizedIssuer memory newAuth = AuthorizedIssuer({
             name            : _name,
             url             : _url,
             issuerAddress   : _issuer,     // 발행자 관련 주소
             authorized      : true
         });
 
-        _authorizedList[_issuer] = newCert;
+        _authorizedList[_issuer] = newAuth;
     }
-    
 
+    function deauthorize(address _issuer) onlyOwner public{
+    
+        AuthorizedIssuer memory newAuth = AuthorizedIssuer({
+            name            : "",
+            url             : "",
+            issuerAddress   : address(0),     // 발행자 관련 주소
+            authorized      : false
+        });
+
+        _authorizedList[_issuer] = newAuth;
+    }
+
+    // fallback
+    function() external payable {}
 
     modifier onlyOwner {
         require (msg.sender == owner, "Only Owner");
