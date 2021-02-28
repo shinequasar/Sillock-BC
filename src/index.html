@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <title>SILLOCK</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+  <script src="index.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class ="col-md-8 col-md-offset-2">
+        <h1 class= "text-center">SILLOCK</h1>
+        <h2 class= "text-center">CERT COIN</h2>
+        <h3 class= "text-center"></h3>
+        <code> SILLOCK SMART CONTRACT</code>
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "issue"
+                  data-toggle="modal"
+                  data-target="#issueModal">
+                  발행
+          </button>
+
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "issue"
+                  data-toggle="modal"
+                  data-target="#getKlipAddressModal">
+                  Get address
+          </button>
+
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "issue"
+                  data-toggle="modal"
+                  data-target="#getMyCertModal">
+                  Get my Cert
+          </button>
+
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "search"
+                  data-toggle="modal"
+                  data-target="#searchModal">
+                  검색
+          </button>
+
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "getEmptyCert"
+                  data-toggle="modal"
+                  data-target="#emptyCertModal">
+                  발행 권한 획득
+          </button>
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "login"
+                  data-toggle="modal"
+                  data-target="#loginModal">
+                  로그인
+          </button>
+
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "logout"
+                  style="display: none;"
+                  onclick="App.handleLogout()">
+                  로그아웃
+          </button>
+          <h3>
+            <div class="text-center" id="address"></div>
+            <div class="text-center" id="ticketAvailable"></div>
+          </h3>
+      </div>
+    </div>
+  </div>
+
+  <br/>
+
+  <div class="row  text-center">
+    <div class="col-md-2 col-md-offset-5">
+      <div id="owner" style="display: none">
+        <hr />
+        <label> Send klay to contract</label>
+        <div class="input-group">
+          <input type="number" class="form-control" id="amount"/>
+          <input type="text" class="form-control" id="account"/>
+
+          <span class="input-group-btn">
+            <button type="button" class="btn btn-default" onlick= "App.deposit()"> 송금</button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="loginModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="keystore">Keystore</label>
+              <input type="file" id="keystore" onchange="App.handleImport()"><br/>
+          </div>
+          <div class="form-group">
+            <label for="login">password</label>
+              <input type="password" class="form-control" id="input-password" onchange="App.handlePassword()">
+            <p class="help-block" id ="message"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="submit" onclick="App.handleLogin()">Login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="getKlipAddressModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="keystore">Keystore</label>
+              <input type="file" id="keystore" onchange="App.getKlipAddr()"><br/>
+          </div>
+          <div class="form-group">
+            <label for="login">password</label>
+              <input type="password" class="form-control" id="input-password" onchange="App.handlePassword()">
+            <p class="help-block" id ="message"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="submit" onclick="App.handleLogin()">Login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="keystore">KLIP Auth</label>
+            <input type="file" id="keystore" onchange="App.handleImport()"><br/>
+        </div>
+        <div class="form-group">
+          <label for="login">password</label>
+            <input type="password" class="form-control" id="input-password" onchange="App.handlePassword()">
+          <p class="help-block" id ="message"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="submit" onclick="App.handleLogin()">Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="issueModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="cert">Cert</label>
+            이름: <input type="text" class="form-control" name="cert-name" onchange="App.handleInput()"><br/>
+            발행자주소: <input type="text" class="form-control" name="cert-holder" onchange="App.handleInput()"><br/>
+            url: <input type="text" class="form-control" name="cert-url" onchange="App.handleInput()"><br/>
+            exchangeable : <input type="text" class="form-control" name="cert-exchangable" onchange="App.handleInput()"><br/>
+            date: <input type="text" class="form-control" name="cert-date" onchange="App.handleInput()">
+            <p class="help-block" id ="message"></p>
+          </div>
+          <p>자격을 발행합니다</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="App.issueCert()">Issue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
+
+<style>
+  .yellow-box {
+    background-color: #FFC;
+    padding: 2rem;
+    margin: 0 auto;
+    max-width: 500px;
+    font-size: 80px;
+  }
+
+  #timer {
+    font-size: 80px;
+    color: red;
+  }
+
+  @keyframes spinner-line-fade-more {
+    0%, 100% {
+      opacity: 0;
+    }
+    1% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes spinner-line-fade-quick {
+    0%, 39%, 100% {
+      opacity: 0.25;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes spinner-line-fade-default {
+    0%, 100% {
+      opacity: 0.22;
+    }
+    1% {
+      opacity: 1;
+    }
+  }
+</style>
