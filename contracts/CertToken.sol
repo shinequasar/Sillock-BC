@@ -1,5 +1,4 @@
 pragma solidity ^0.5.6;
-pragma experimental ABIEncoderV2;
 
 import "./ERC721/ERC721Enumerable.sol";
 
@@ -222,12 +221,6 @@ contract CertToken is ERC721Enumerable{
 
        _cert2sig[_tokenId].push(_sig); 
 
-    }
-
-    function getAllSig(uint256 _tokenId) public view
-    returns(string[] memory){
-        string[] memory arraySig = _cert2sig[_tokenId]; 
-        return arraySig;
     }
 
     function getIndexedSig(uint256 _tokenId, uint256 _index) public view
