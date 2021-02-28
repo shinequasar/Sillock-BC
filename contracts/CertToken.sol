@@ -1,4 +1,5 @@
 pragma solidity ^0.5.6;
+pragma experimental ABIEncoderV2;
 
 import "./ERC721/ERC721Enumerable.sol";
 
@@ -35,13 +36,14 @@ contract CertToken is ERC721Enumerable{
 
     mapping (address => uint256) private _address2EmptyCert; // TODO: 예상 발행량을 고려해야함
     mapping (address => AuthorizedIssuer) private _authorizedList;
-    
+    mapping (uint256 => string[]) private _cert2sig;
+
     address payable public owner;
 
     // 1000000000000000000 Peb = klay
     uint256 private issueFee;
 
-    event NewCert(uint256 indexed certId, string indexed name, uint no, string url, address holder, address issuer, bool exchangable, bool authorized, uint date, uint now);    
+    event NewCert(uint256 indexed tokenId, string indexed name, uint no, string url, address holder, address issuer, bool exchangable, bool authorized, uint date, uint now);    
     event BurnCert(uint256 tokenId);
 
     constructor() public {
@@ -54,12 +56,9 @@ contract CertToken is ERC721Enumerable{
         issueFee = _fee;
     }
 
-    function changeExtContract(address _contractAddr) onlyOwner public{
-        require(_contractAddr != address(0));
-    }
-
-
-    function mintCert(string memory _name, address _holder, string memory _url, bool _exchangable, uint _date) public payable {
+    function mintCert(string memory _name, address _holder, string memory _url, bool _exchangable, uint256 _date)
+    public payable
+    returns(uint256){
         
 
         // 발행하는 주체가 직접 호출해야 함
@@ -92,7 +91,10 @@ contract CertToken is ERC721Enumerable{
         _id2Certs[tokenId] = newCert;
         _mint(_holder, tokenId); // 새 자격증 발행
         
-        emit NewCert(tokenId, _name, certNo, _url, _holder, issuer, _exchangable, authorized, _date, now);
+        // event NewCert(uint256 indexed tokenId, string indexed name, uint no, string url, address holder, address issuer, bool exchangable, bool authorized, uint date, uint now);    
+
+        emit NewCert(tokenId, _name, certNo, _url, _holder, issuer, _exchangable, authorized, newCert.date, now);
+        return tokenId;
     }
     
     // TODO : 권한 holder, owner(byobl), issuer?
@@ -210,6 +212,28 @@ contract CertToken is ERC721Enumerable{
         });
 
         _authorizedList[_issuer] = newAuth;
+    }
+
+    function addSig(uint256 _tokenId, string memory _sig) public{
+
+        Cert memory targetCert = _id2Certs[_tokenId];
+        require(targetCert.holder != address(0), "No such Cert");
+        require((msg.sender == owner || msg.sender == targetCert.holder), "Add sig error, Permission Error");
+
+       _cert2sig[_tokenId].push(_sig); 
+
+    }
+
+    function getAllSig(uint256 _tokenId) public view
+    returns(string[] memory){
+        string[] memory arraySig = _cert2sig[_tokenId]; 
+        return arraySig;
+    }
+
+    function getIndexedSig(uint256 _tokenId, uint256 _index) public view
+    returns(string memory){
+        string memory latestSig = _cert2sig[_tokenId][_index]; 
+        return latestSig;
     }
 
     // fallback
