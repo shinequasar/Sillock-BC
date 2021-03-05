@@ -44,6 +44,10 @@ contract CertToken is ERC721Enumerable{
 
     event NewCert(uint256 indexed tokenId, string indexed name, uint no, string url, address holder, address issuer, bool exchangable, bool authorized, uint date, uint now);    
     event BurnCert(uint256 tokenId);
+    event MintEmptyCert(address issuer, uint256 num);
+    event OrgAuthorize(address indexed issuer, string name, string url);
+    event OrgDeauthorize(address indexed issuer);
+    event AddSig(uint256 tokenId, string sig);
 
     constructor() public {
         owner = msg.sender; // cert contract's owner
@@ -165,6 +169,8 @@ contract CertToken is ERC721Enumerable{
         // 발행자의 주소를 받고 해당 주소와 매핑된 갯수를 한개 추가함
         uint256 totalAmount = _address2EmptyCert[_issuer].add(_num); // using SafeMath
         _address2EmptyCert[_issuer] = totalAmount;
+
+        emit MintEmptyCert(_issuer, _num);
     }
 
     // KLAY로 구입 가능
@@ -199,6 +205,7 @@ contract CertToken is ERC721Enumerable{
         });
 
         _authorizedList[_issuer] = newAuth;
+        emit OrgAuthorize(newAuth.issuerAddress, newAuth.name, newAuth.url);
     }
 
     function deauthorize(address _issuer) onlyOwner public{
@@ -211,6 +218,8 @@ contract CertToken is ERC721Enumerable{
         });
 
         _authorizedList[_issuer] = newAuth;
+        emit OrgDeauthorize(_issuer);
+
     }
 
     function addSig(uint256 _tokenId, string memory _sig) public{
@@ -221,16 +230,28 @@ contract CertToken is ERC721Enumerable{
 
        _cert2sig[_tokenId].push(_sig); 
 
+        emit AddSig(_tokenId, _sig);
     }
 
     function getIndexedSig(uint256 _tokenId, uint256 _index) public view
     returns(string memory){
-        string memory latestSig = _cert2sig[_tokenId][_index]; 
-        return latestSig;
+        string memory targetSig = _cert2sig[_tokenId][_index]; 
+        return targetSig;
     }
 
+    function getLatestSig(uint256 _tokenId) public view
+    returns(string memory){
+        uint256 index = _cert2sig[_tokenId].length - 1;
+        return _cert2sig[_tokenId][index];
+    }
+    
     // fallback
     function() external payable {}
+
+    function changeOwner() onlyOwner public{
+        owner = msg.sender;
+        return;
+    }
 
     modifier onlyOwner {
         require (msg.sender == owner, "Only Owner");
