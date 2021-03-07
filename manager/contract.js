@@ -1,7 +1,26 @@
 const Caver = require('caver-js')
-const caver = new Caver('https://api.baobab.klaytn.net:8651')
 const fs = require('fs')
-var argv = require('minimist')(process.argv.slice(2), {string: ['addr', '_'], default: {addr: 'owner'}});
+var argv = require('minimist')(process.argv.slice(2), {string: ['addr', '_'], default: {addr: 'owner', network: 'baobab'}});
+var caver = ""
+
+switch(argv.network) {
+    case 'baobab':
+        caver = new Caver('https://api.baobab.klaytn.net:8651')
+        break
+    case 'cypress':
+        const accessKeyId = "";
+        const secretAccessKey = "";
+        
+        const option = {
+          headers: [
+            {name: 'Authorization', value: 'Basic ' + Buffer.from(accessKeyId + ':' + secretAccessKey).toString('base64')},
+            {name: 'x-chain-id', value: '8217'},
+          ]
+        }
+        caver = new Caver(new Caver.providers.HttpProvider("https://node-api.klaytnapi.com/v1/klaytn", option))
+
+        break
+}
 
 var contractInstance = ''
 
@@ -57,7 +76,15 @@ const SillockContractManager = {
 
     init: function () {
         const abi = JSON.parse(fs.readFileSync("../deployedABI.txt"));
-        const addr = fs.readFileSync("../deployedAddress.txt").toString();
+        var addr = ""
+        switch(argv.network){
+            case 'baobab':
+                addr = fs.readFileSync("../deployedAddress.txt").toString();
+                break
+            case 'cypress':
+                addr = fs.readFileSync("../cypress/deployedAddress.txt").toString();
+                break
+            }
         contractInstance = new caver.contract(abi, addr)
     },
 
@@ -164,13 +191,14 @@ const SillockContractManager = {
                 console.log(value)
                 break
             
-            // TODO : How to send klay to contract using caver js
             case 'buyEmptyCert':
                 console.log('BUY EMPTY CERT')
                 if (args.length != 1) {
                     console.log('invalid args length')
                 }
-                value = await contractInstance.methods.buyEmptyCert(args).call()
+                var num = caver.abi.encodeParameter('uint256',args[0])
+
+                value = await contractInstance.methods.buyEmptyCert(num).send({ from:keyring.address, gas:'0x4bfd200', value:caver.utils.toPeb(1, 'KLAY')})
                 console.log(value)
                 break
 
@@ -234,14 +262,19 @@ const SillockContractManager = {
 
             case 'changeFee':
                 console.log('ChangeFee')
-                // var num   = caver.abi.encodeParameter('uint256',args[0])
                 var num   = caver.abi.encodeParameter('uint256',args[0])
 
                 value = await contractInstance.methods.changeFee(num).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
                 break
     
+            case 'returnFee':
+                console.log('ReturnFee')
 
+                value = await contractInstance.methods.returnFee().call()
+                console.log(value)
+                break
+            
             case 'tokenOfOwnerByIndex':
                 console.log('Get token of owner by index')
                 if (args.length != 2) {
@@ -352,8 +385,8 @@ const SillockContractManager = {
     
 } 
 
-SillockContractManager.init()
 var funcArgs = SillockContractManager.parseArg()
+SillockContractManager.init()
 SillockContractManager.executeFunc(funcArgs[0], funcArgs[1])
 
 module.exports = SillockContractManager
