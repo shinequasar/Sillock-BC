@@ -59,6 +59,11 @@ contract CertToken is ERC721Enumerable{
         issueFee = _fee;
     }
 
+    function returnFee() public view
+    returns(uint256){
+        return issueFee;
+    }
+
     function mintCert(string memory _name, address _holder, string memory _url, bool _exchangable, uint256 _date)
     public payable
     returns(uint256){
@@ -174,7 +179,7 @@ contract CertToken is ERC721Enumerable{
     }
 
     // KLAY로 구입 가능
-    function buyEmptyCert(address _issuer, uint256 _num) public payable
+    function buyEmptyCert(uint256 _num) public payable
     returns(uint256){
         
         require(_num > 0, "Needs positive value");
@@ -184,8 +189,10 @@ contract CertToken is ERC721Enumerable{
         
         owner.transfer(fee); // transfer money to owner
         
-        uint256 totalAmount = _address2EmptyCert[_issuer].add(_num); // using SafeMath
-        _address2EmptyCert[_issuer] = totalAmount;
+        uint256 totalAmount = _address2EmptyCert[msg.sender].add(_num); // using SafeMath
+        _address2EmptyCert[msg.sender] = totalAmount;
+
+        (msg.sender).transfer(msg.value - fee);
 
         return totalAmount;
     }
@@ -248,8 +255,9 @@ contract CertToken is ERC721Enumerable{
     // fallback
     function() external payable {}
 
-    function changeOwner() onlyOwner public{
-        owner = msg.sender;
+    function changeOwner(address payable nextOwner) onlyOwner public{
+        require(nextOwner != address(0));
+        owner = nextOwner;
         return;
     }
 
