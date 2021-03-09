@@ -27,16 +27,8 @@
                   class = "btn btn-info pull-right"
                   id = "issue"
                   data-toggle="modal"
-                  data-target="#issueModal">
+                  data-target="#klipMintCertModal">
                   발행
-          </button>
-
-          <button type = "button"
-                  class = "btn btn-info pull-right"
-                  id = "issue"
-                  data-toggle="modal"
-                  data-target="#getKlipAddressModal">
-                  Get address
           </button>
 
           <button type = "button"
@@ -77,6 +69,15 @@
                   onclick="App.handleLogout()">
                   로그아웃
           </button>
+          <button type = "button"
+                  class = "btn btn-info pull-right"
+                  id = "login"
+                  data-toggle="modal"
+                  data-target="#klipLoginModal"
+                  onclick="App.klipLogin()">
+                  KLIP LOGIN
+          </button>
+
           <h3>
             <div class="text-center" id="address"></div>
             <div class="text-center" id="ticketAvailable"></div>
@@ -127,61 +128,38 @@
     </div>
   </div>
 
-  <div class="modal fade" tabindex="-1" role="dialog" id="getKlipAddressModal">
+  <div class="modal fade" tabindex="-1" role="dialog" id="klipLoginModal">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <div class="modal-body">
-          <div class="form-group">
-            <label for="keystore">Keystore</label>
-              <input type="file" id="keystore" onchange="App.getKlipAddr()"><br/>
-          </div>
-          <div class="form-group">
-            <label for="login">password</label>
-              <input type="password" class="form-control" id="input-password" onchange="App.handlePassword()">
-            <p class="help-block" id ="message"></p>
-          </div>
+          <canvas id="qrlogin"></canvas>
+          <p class="help-block" id ="requestKey"></p>
+          <p class="help-block" id ="message"></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="submit" onclick="App.handleLogin()">Login</button>
+          <button type="button" class="btn btn-primary" id="submit" onclick="App.handleKlipLogin()">Login</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="keystore">KLIP Auth</label>
-            <input type="file" id="keystore" onchange="App.handleImport()"><br/>
-        </div>
-        <div class="form-group">
-          <label for="login">password</label>
-            <input type="password" class="form-control" id="input-password" onchange="App.handlePassword()">
-          <p class="help-block" id ="message"></p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="submit" onclick="App.handleLogin()">Login</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-  <div class="modal fade" tabindex="-1" role="dialog" id="issueModal">
+  <div class="modal fade" tabindex="-1" role="dialog" id="klipMintCertModal">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <div class="modal-body">
           <div class="form-group">
             <label for="cert">Cert</label>
-            이름: <input type="text" class="form-control" name="cert-name" onchange="App.handleInput()"><br/>
-            발행자주소: <input type="text" class="form-control" name="cert-holder" onchange="App.handleInput()"><br/>
-            url: <input type="text" class="form-control" name="cert-url" onchange="App.handleInput()"><br/>
-            exchangeable : <input type="text" class="form-control" name="cert-exchangable" onchange="App.handleInput()"><br/>
-            date: <input type="text" class="form-control" name="cert-date" onchange="App.handleInput()">
+            이름: <input type="text" class="form-control" id="cert-name" ><br/>
+            소유자주소: <input type="text" class="form-control" id="cert-holder" ><br/>
+            ipfs url: <input type="text" class="form-control" id="cert-url" ><br/>
+            교환 가능 : <input type="text" class="form-control" id="cert-exchangable" ><br/>
+            date: <input type="text" class="form-control" id="cert-date" >
+
+            <button type="button" class="btn" data-bs-dismiss="modal" onclick="App.generateMintQR()">QR GENERATE</button>
             <p class="help-block" id ="message"></p>
+            <canvas id="qrMint"></canvas>
           </div>
           <p>자격을 발행합니다</p>
         </div>

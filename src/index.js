@@ -1,5 +1,6 @@
 import Caver from "caver-js";
 import { createFromRLPEncoding } from "caver-js/packages/caver-account";
+import QRCode from "qrcode";
 
 const config = {
     rpcURL: 'https://api.baobab.klaytn.net:8651'
@@ -8,6 +9,7 @@ const cav = new Caver(config.rpcURL);
 
 // DEPLOYED_ABI, DEPLOYED_ADDRESS BApp 상수들
 const agContract = new cav.klay.Contract(DEPLOYED_ABI, DEPLOYED_ADDRESS);
+var requestKey
 const App = {
     auth: {
       accessType: 'keystore',
@@ -15,12 +17,19 @@ const App = {
       password:   ''
     },
 
+    klip: {
+      address: '',
+      requestKey: ''
+    },
+    requestKey: "",
+
     start: async function () {
       const walletFromSession = sessionStorage.getItem('walletInstance');
       if (walletFromSession) {
         try {
           cav.klay.accounts.wallet.add(JSON.parse(walletFromSession));
           this.changeUI(JSON.parse(walletFromSession));
+          this.changeUIKlip(JSON.parse(walletFromSession));
         } catch (e) {
           sessionStorage.removeItem('walletInstance');
         }
@@ -68,46 +77,117 @@ const App = {
       location.reload();
     },
   
-    generateNumbers: async function () {
+    klipLogin: async function (){
+      var response =  await fetch("https://a2a-api.klipwallet.com/v2/a2a/prepare", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: '{"bapp": { "name" : "Sillock" }, "type": "auth" }'
+      })
   
-    },
-  
-    submitAnswer: async function () {
-  
-    },
-  
-    deposit: async function () {
-      // contract abi, address 필요
-      // login된 정보, contract owner 변수 호출
+      var result = await response.json();
+      var requestKey = result.request_key
+      console.log(requestKey)
+      // this.requestKey = requestKey
+      sessionStorage.removeItem('requestKey');
+      sessionStorage.setItem('requestKey', requestKey);
+      var canvas = document.getElementById('qrlogin')
+      QRCode.toCanvas(canvas, "kakaotalk://klipwallet/open?url=https://klipwallet.com/?target=/a2a?request_key=" + requestKey, function (error) {
+        if (error) console.error(error)
+      })
 
-      const walletInstance = this.getWallet();
-      if (walletInstance) {
-        if (await this.callOwner() !== walletInstance.address) return;
-        else {
-          var amount = $('#amount').val();
-          if (amount) {
-            agContract.methods.deposit().send({
-              from: walletInstance.address,
-              gas: '250000',
-              value: cav.utils.toPeb(amount, "KLAY")
-            })
-            .once('transactionHash', (txHash) => {
-              console.log(`txHash: ${txHash}`);
-            })
-            .once('receipt', (receipt) => {
-              console.log(`(#${receipt.blockNumber})`, receipt);
-              alert(amount + "Success to send klay");
-              location.reload();
-            })
-            .once('error', (error) => {
-              alert(error.message);
-            })
+    },
+
+    handleKlipLogin: async function (){
+      try {
+        var requestKey = sessionStorage.getItem('requestKey')
+        var response =  await fetch(`https://a2a-api.klipwallet.com/v2/a2a/result?request_key=` + requestKey, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           }
+        })
+        var result = await response.json()
+        console.log(result)
+        
+        if (result.status !== "completed"){
+          console.log("not Completed")
+          throw "not completed"
         }
+
+        var address = result.result.klaytn_address
+        console.log(address)
+        sessionStorage.setItem("klipAddress", address)
+
+        changeUI = this.changeUIKlip()
+
+      } catch (e) {
+        $('#message').text('LOGIN FAILED')
       }
+    },
+
+    changeUIKlip: async function (){
+      console.log("this.changeUIKlip")
+      $('#klipLoginModal').modal('hide');
+      $('#login').modal('hide')
+      $('#address').append('<br>' + '<p>' + 'my address: ' + sessionStorage.getItem("klipAddress") + '</p>');
 
     },
+
+    changeUI: async function (walletInstance) {
+      // close modal
+      $('#loginModal').modal('hide');
+      $('#login').hide();
+      $('#logout').show();
+      $('#address').append('<br>' + '<p>' + 'my address: ' + walletInstance.address + '</p>');
+      const certsNum = await this.callContractEmptyCerts(walletInstance);
+      $('#ticketAvailable').append('<p>' + 'Available Certs : ' + JSON.stringify(certsNum) + '</p>');
+
+      if (await this.callOwner() === walletInstance.address) {
+        $('#owner').show();
+      }
+    },
+
+    getMyCerts: async () => {
   
+    },
+
+    generateMintQR: async function (){
+
+      var params = `[\"${document.getElementById('cert-name').value}\", \"${document.getElementById('cert-holder').value}\", \"${document.getElementById('cert-url').value}\", ${document.getElementById('cert-exchangable').value},  ${document.getElementById('cert-date').value}]`
+
+      var txjson = {
+        to : "0xd8bbb3420fdf8fd734472efde3197a692107cc2f",
+        value : "0",
+        abi   : `{\"constant\": false,\"inputs\": [{\"name\": \"_name\",\"type\": \"string\"},{\"name\": \"_holder\",\"type\": \"address\"},{\"name\": \"_url\",\"type\": \"string\"},{\"name\": \"_exchangable\",\"type\": \"bool\"},{\"name\": \"_date\",\"type\": \"uint256\"}],\"name\": \"mintCert\",\"outputs\": [{\"name\": \"\",\"type\": \"uint256\"}],\"payable\": true,\"stateMutability\": \"payable\",\"type\": \"function\"}`,
+        params: `${params}`
+      }
+      //  "[\"test_string\"]" 
+      console.log(JSON.stringify(txjson))
+
+      var response =  await fetch("https://a2a-api.klipwallet.com/v2/a2a/prepare", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: `{"bapp": { "name" : "Sillock" }, "type": "execute_contract" ,"transaction" : ${JSON.stringify(txjson)}}`
+      })
+
+      var result = await response.json();
+      console.log(result)
+      var requestKey = result.request_key
+      //var requestKey = "sample"
+      console.log(requestKey)
+      // this.requestKey = requestKey
+      sessionStorage.removeItem('requestKey');
+      sessionStorage.setItem('requestKey', requestKey);
+
+      var canvas = document.getElementById('qrMint')
+      QRCode.toCanvas(canvas, "kakaotalk://klipwallet/open?url=https://klipwallet.com/?target=/a2a?request_key=" + requestKey, function (error) {
+        if (error) console.error(error)
+      })
+    },
     callOwner: async function () {
       return await agContract.methods.owner().call();
     },
@@ -156,26 +236,7 @@ const App = {
       }
     },
   
-    changeUI: async function (walletInstance) {
-      // close modal
-      $('#loginModal').modal('hide');
-      $('#login').hide();
-      $('#logout').show();
-      $('#address').append('<br>' + '<p>' + 'my address: ' + walletInstance.address + '</p>');
-      const certsNum = await this.callContractEmptyCerts(walletInstance);
-      $('#ticketAvailable').append('<p>' + 'Available Certs : ' + JSON.stringify(certsNum) + '</p>');
 
-      if (await this.callOwner() === walletInstance.address) {
-        $('#owner').show();
-      }
-    },
-    getKlipAddr: function() {
-
-    }
-    ,
-    generateQRcode: function (address) {
-      new QRCode(document.getElementById("qrcode"), "address");
-    },
 
     removeWallet: function () {
       cav.klay.accounts.wallet.clear();
