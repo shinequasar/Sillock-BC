@@ -48,7 +48,7 @@ const App = {
       }
 
       if (this.caver == "") {
-        this.changeNetwork("baobab")
+        this.changeNetwork("cypress")
       }
     },
 
@@ -212,7 +212,7 @@ const App = {
       $('#loginModal').modal('hide');
       $('#login').hide();
       $('#logout').show();
-      $('#address').append('<br>' + '<p>' + 'my address: ' + walletInstance.address + '</p>');
+      $('#address').text('my address: ' + walletInstance.address);
       const certsNum = await this.callContractEmptyCerts(walletInstance);
       $('#ticketAvailable').append('<p>' + 'Available Certs : ' + JSON.stringify(certsNum) + '</p>');
 
@@ -222,6 +222,7 @@ const App = {
     },
 
     getAllCerts: async function () {
+      $("#getAllCertModal").text=""
       var certList = new Array()
       var num = await this.contractInstance.methods.totalSupply().call()
 
@@ -232,37 +233,115 @@ const App = {
           var id = await this.contractInstance.methods.tokenByIndex(index).call()
 
 
-          console.log(i + " : "+ id)
+          // console.log(i + " : "+ id)
   
           // get cert
           var tokenId = this.caver.abi.encodeParameter('uint256',id)
           var cert = await this.contractInstance.methods.getCert(tokenId).call()
 
-          tmpCert.tokenId        = cert[0]
-          tmpCert.name           = cert[1]
+          tmpCert.tokenId        = cert[0] // !
+          tmpCert.name           = cert[1] 
           tmpCert.num            = cert[2]
-          tmpCert.issuer         = cert[3]
-          tmpCert.imgurl         = cert[4]
+          tmpCert.issuer         = cert[3] // !
+          tmpCert.imgurl         = cert[4] // !
           tmpCert.holder         = cert[5]
-          tmpCert.date           = cert[6]
-          tmpCert.mintDate       = cert[7]
+          tmpCert.date           = cert[6] // !
+          tmpCert.mintDate       = cert[7] // !
           tmpCert.exchangable    = cert[8]
-          tmpCert.authorized     = cert[9]
+          tmpCert.authorized     = cert[9] // !
           
           certList.push(tmpCert)
           //console.log("GET IPFS DATA############")
           //var data = await contract.getIPFSdata(tmpCert.imgurl)
           //console.log(data)
-  
-  
       }
-  
-      var jsonData = JSON.stringify(certList)
-      $('#allCerts').text(jsonData)
 
-      console.log(jsonData)
+
   
-      console.log(certList)
+      // var jsonData = JSON.stringify(certList)
+      // console.log(jsonData);
+      function validURL(str) {
+        var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+          '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+          '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+          '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+          '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+          '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+        return !!pattern.test(str);
+      }
+
+      for (let index = 0; index < certList.length; index++) {
+        const element = certList[index];
+        if (element['issuer'] == sessionStorage.getItem('klipAddress')) {
+          if(!element['authorized']) {
+            if (!validURL(element['imgurl'])){
+              var card = "<div class='card col-md-4 mb-2' style='width: 12rem;'><img id='imgurl' src=' \
+              " + "http://www.sillock.me/image/blockchain.svg" + "' class='card-img-top' alt='...'>\
+              <div class='card-body'>\
+              <p id='tokenId'> tokenId :\
+              " + element['tokenId'] + "\
+              </p><p id='issuer'> issuer :\
+              " + element['issuer'] + "\
+              </p><p id='date'> date :\
+              " + element['date'] + "\
+              </p><p id='mintDate'> mintDate :\
+              " + element['mintDate'] + "</p>\
+              </div></div>"
+            } else {
+              var card = "<div class='card col-md-4 mb-2' style='width: 12rem;'><img id='imgurl' src=' \
+              " + element['imgurl'] + "' class='card-img-top' alt='...'>\
+              <div class='card-body'>\
+              <p id='tokenId'> tokenId :\
+              " + element['tokenId'] + "\
+              </p><p id='issuer'> issuer :\
+              " + element['issuer'] + "\
+              </p><p id='date'> date :\
+              " + element['date'] + "\
+              </p><p id='mintDate'> mintDate :\
+              " + element['mintDate'] + "</p>\
+              </div></div>"
+            }
+          } else {
+            if (!validURL(element['imgurl'])){
+              var card = "<div class='card col-md-4 mb-2' style='width: 12rem;'><img id='imgurl' src=' \
+              " + "http://www.sillock.me/image/blockchain.svg" + "' class='card-img-top' alt='...'>\
+              <div class='card-body'>\
+              <p id='tokenId'> tokenId :\
+              " + element['tokenId'] + "\
+              </p><p id='issuer'> issuer :\
+              " + element['issuer'] + "\
+              </p><p id='date'> date :\
+              " + element['date'] + "\
+              </p><p id='mintDate'> mintDate :\
+              " + element['mintDate'] + "</p>\
+              </div></div>"
+            } else {
+              var card = "<div class='card col-md-4 mb-2' style='width: 12rem;'><img id='imgurl' src=' \
+              " + element['imgurl'] + "' class='card-img-top' alt='...'>\
+              <div class='card-body'>\
+              <p id='tokenId'> tokenId :\
+              " + element['tokenId'] + "\
+              </p><p id='issuer'> issuer :\
+              " + element['issuer'] + "\
+              </p><p id='date'> date :\
+              " + element['date'] + "\
+              </p><p id='mintDate'> mintDate :\
+              " + element['mintDate'] + "</p>\
+              </div></div>"
+            }
+          }
+
+          $("#getAllCertModal").append(card)
+        }
+      }
+
+      //$('#allCerts').text(certList)
+
+      //$('#tokenId').text(certList['tokenId'])
+      //$('#issuer').text(certList['issuer'])
+      //$('#date').text(certList['date'])
+      //$('#mintDate').text(certListp['mintDate'])
+      //$('#authorized').text(certList['authorized'])
     },
 
     mintEmptyCert: async function(){
@@ -326,7 +405,7 @@ const App = {
     },
   
     callContractEmptyCerts: async function(walletInstance) {
-      return await this.contractInstance.methods.returnEmptyCert(walletInstance.address).call();
+      return await this.contractInstance.methods.returnEmptyCert(sessionStorage.getItem("klipAddress")).call();
     },
 
     getWallet: function () {
