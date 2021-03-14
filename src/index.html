@@ -22,7 +22,6 @@
         <h1 class= "text-center">SILLOCK</h1>
         <h2 class= "text-center">CERT COIN</h2>
         <h3 class= "text-center"></h3>
-        <code> SILLOCK SMART CONTRACT</code>
           <button type = "button"
                   class = "btn btn-info pull-right"
                   id = "issue"
@@ -35,8 +34,9 @@
                   class = "btn btn-info pull-right"
                   id = "issue"
                   data-toggle="modal"
-                  data-target="#getMyCertModal">
-                  Get my Cert
+                  data-target="#getAllCertModal"
+                  onclick="App.getAllCerts()">
+                  모든 자격증 불러오기
           </button>
 
           <button type = "button"
@@ -52,8 +52,9 @@
                   id = "getEmptyCert"
                   data-toggle="modal"
                   data-target="#emptyCertModal">
-                  발행 권한 획득
+                  발행 권한 관리
           </button>
+
           <button type = "button"
                   class = "btn btn-info pull-right"
                   id = "login"
@@ -69,6 +70,7 @@
                   onclick="App.handleLogout()">
                   로그아웃
           </button>
+          
           <button type = "button"
                   class = "btn btn-info pull-right"
                   id = "login"
@@ -144,6 +146,32 @@
     </div>
   </div>
 
+  <div class="modal fade" tabindex="-1" role="dialog" id="getAllCertModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <p id ="allCerts"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="searchModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <p id ="targetCert"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <div class="modal fade" tabindex="-1" role="dialog" id="klipMintCertModal">
     <div class="modal-dialog modal-sm">
@@ -161,11 +189,33 @@
             <p class="help-block" id ="message"></p>
             <canvas id="qrMint"></canvas>
           </div>
-          <p>자격을 발행합니다</p>
+          <p id= "mintMessage">자격을 발행합니다</p>
+          <p class="help-block" id ="message"></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" onclick="App.issueCert()">Issue</button>
+          <button type="button" class="btn btn-primary" onclick="App.handleKlipMintCert()">Issue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="emptyCertModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="cert">Mint Empty Cert</label><br/>
+            address: <input type="text" class="form-control" id="mint-cert-addr" ><br/>
+            num: <input type="text" class="form-control" id="mint-cert-num" ><br/>
+            <p class="help-block" id ="message"></p>
+          </div>
+          <p id= "emptyMintMessage">발행 권한 주기</p>
+          <p class="help-block" id ="message"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="App.mintEmptyCert()">Issue</button>
         </div>
       </div>
     </div>

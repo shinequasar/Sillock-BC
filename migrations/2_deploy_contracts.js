@@ -11,13 +11,19 @@ module.exports = function (deployer) {
           console.log("Success to write ABI");  
         } 
       )
-
+      console.log(CertToken)
       fs.writeFile('deployedAddress.txt', CertToken.address,
         (err) => {
           if (err) throw err;
           console.log("Success to write contract address");
         }
       )
+      fs.writeFile('bytesCode.txt', CertToken._json.bytecode,
+      (err) => {
+        if (err) throw err;
+        console.log("Success to write contract address");
+      }
+    )
     }
   })
 };

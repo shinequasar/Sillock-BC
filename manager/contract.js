@@ -1,12 +1,12 @@
 const Caver = require('caver-js')
 const fs = require('fs')
-var argv = require('minimist')(process.argv.slice(2), {string: ['addr', '_'], default: {addr: 'owner', network: 'baobab'}});
+var argv = require('minimist')(process.argv.slice(2), {string: ['addr', '_'], default: {addr: 'owner', network: 'baobab', ipfs: '127.0.0.1'}});
 var caver = ""
-
 switch(argv.network) {
     case 'baobab':
         caver = new Caver('https://api.baobab.klaytn.net:8651')
         break
+
     case 'cypress':
         const accessKeyId = "";
         const secretAccessKey = "";
@@ -20,8 +20,10 @@ switch(argv.network) {
         caver = new Caver(new Caver.providers.HttpProvider("https://node-api.klaytnapi.com/v1/klaytn", option))
 
         break
+
 }
 
+caver.ipfs.setIPFSNode(argv.ipfs, 8080, true)
 var contractInstance = ''
 
 var keyring = ''
@@ -106,7 +108,7 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.mintEmptyCert(addr, num).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
 
             case 'returnEmptyCert':
                 console.log('GET EMPTY CERT')
@@ -114,7 +116,7 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.returnEmptyCert(addr).call()
                 console.log(value)
-                break
+                return value
 
             case 'mintCert':
                 console.log('MINT CERT')
@@ -129,7 +131,7 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.mintCert(name, holder, url, exchangable, date).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
 
 
             case 'burnCert':
@@ -140,7 +142,7 @@ const SillockContractManager = {
                 var tokenId = caver.abi.encodeParameter('uint256',args[0])
                 value = await contractInstance.methods.burnCert(tokenId).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
 
             
             case 'transferOwnership':
@@ -153,13 +155,13 @@ const SillockContractManager = {
                 value = await contractInstance.methods.transferOwnership(tokenId, toAddr).send({ from:keyring.address, gas:'0x4bfd200' })
                 
                 console.log(value)
-                break
+                return value
 
             case 'getTotalCertCount':
                 console.log('GET TOTAL COUNT')
                 value = await contractInstance.methods.getTotalCertCount().call()
                 console.log(value)
-                break
+                return value
 
             case 'getCert':
                 console.log('GET CERT')
@@ -169,7 +171,7 @@ const SillockContractManager = {
                 var tokenId = caver.abi.encodeParameter('uint256',args[0])
                 value = await contractInstance.methods.getCert(tokenId).call()
                 console.log(value)
-                break
+                return value
 
             case 'isAuthorized':
                 console.log('CHECK AUTHORIZED')
@@ -179,7 +181,7 @@ const SillockContractManager = {
                 var orgAddr = args[0]
                 value = await contractInstance.methods.isAuthorized(orgAddr).call()
                 console.log(value)
-                break
+                return value
 
             case 'getIsserInfo':
                 console.log('GET ISSUER INFO')
@@ -189,7 +191,7 @@ const SillockContractManager = {
                 var orgAddr = args[0]
                 value = await contractInstance.methods.getIsserInfo(orgAddr).call()
                 console.log(value)
-                break
+                return value
             
             case 'buyEmptyCert':
                 console.log('BUY EMPTY CERT')
@@ -200,7 +202,7 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.buyEmptyCert(num).send({ from:keyring.address, gas:'0x4bfd200', value:caver.utils.toPeb(1, 'KLAY')})
                 console.log(value)
-                break
+                return value
 
             case 'authorize':
                 console.log('Authorize org')
@@ -210,7 +212,7 @@ const SillockContractManager = {
                 var orgAddr = args[0]
                 value = await contractInstance.methods.authorize(orgAddr).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
 
             case 'deauthorize':
                 console.log('Deauthorize org')
@@ -220,7 +222,7 @@ const SillockContractManager = {
                 var orgAddr = args[0]
                 value = await contractInstance.methods.deauthorize(orgAddr).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
 
             case 'addSig':
                 console.log('Add signiture')
@@ -231,7 +233,7 @@ const SillockContractManager = {
                 var sig     = args[1]
                 value = await contractInstance.methods.addSig(tokenId, sig).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
 
             case 'getIndexedSig':
                 console.log('Get indexed Sig')
@@ -242,7 +244,7 @@ const SillockContractManager = {
                 var index   = caver.abi.encodeParameter('uint256',args[1])
                 value = await contractInstance.methods.getIndexedSig(tokenId, index).call()
                 console.log(value)
-                break
+                return value
 
             case 'getLatestSig':
                 console.log('Get latest Sig')
@@ -252,13 +254,13 @@ const SillockContractManager = {
                 var tokenId = caver.abi.encodeParameter('uint256',args[0])
                 value = await contractInstance.methods.getLatestSig(tokenId).call()
                 console.log(value)
-                break
+                return value
     
             case 'totalSupply':
                 console.log('Get total supply')
                 value = await contractInstance.methods.totalSupply().call()
                 console.log(value)
-                break
+                return value
 
             case 'changeFee':
                 console.log('ChangeFee')
@@ -266,14 +268,14 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.changeFee(num).send({ from:keyring.address, gas:'0x4bfd200' })
                 console.log(value)
-                break
+                return value
     
             case 'returnFee':
                 console.log('ReturnFee')
 
                 value = await contractInstance.methods.returnFee().call()
                 console.log(value)
-                break
+                return value
             
             case 'tokenOfOwnerByIndex':
                 console.log('Get token of owner by index')
@@ -285,7 +287,7 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.tokenOfOwnerByIndex(owner, index).call()
                 console.log(value)
-                break
+                return value
 
             case 'tokenByIndex':
                 console.log('Get token by index')
@@ -296,97 +298,42 @@ const SillockContractManager = {
 
                 value = await contractInstance.methods.tokenByIndex(index).call()
                 console.log(value)
-                break
+                return value
             
             default:
                 console.log('Cannot find Func')
         }
     },
-
-    // '0xa17e177358a78464d73f22fbc600fa98f891993f'
-    returnEmptyCert: async function (args) {
-        var addr = args
-        const value = await contractInstance.methods.returnEmptyCert(addr).call()
-        console.log(value)
+    
+    addIPFSdata: async function (target) {
+        
+        const cid = await caver.ipfs.add(target)
+        
+        console.log("CID : " + cid)
+        return cid
     },
 
-    changeFee: async function (args) {
+    getIPFSdata: async function (cid) {
+        
+        const contents = await caver.ipfs.get(cid)
+        console.log("Content : " + contents)
 
-    },
-
-    mintCert: async function (args) {
-
-    },
-
-    burnCert: async function (args) {
-
-    },
-
-    transferOwnership: async function (args) {
-
-    },
-
-    getTotalCertCount: async function (args) {
-
-    },
-
-    getCert: async function (args) {
-
-    },
-
-    isAuthorized: async function (args) {
-
-    },
-
-
-    getIsserInfo: async function (args) {
-
-    },
-
-    mintEmptyCert: async function (args) {
-
-    },
-
-    buyEmptyCert: async function (args) {
-
-    },
-
-    returnEmptyCert: async function (args) {
-
-    },
-
-    authorize: async function (args) {
-
-    },
-
-    deauthorize: async function (args) {
-
-    },
-
-    addSig: async function (args) {
-
+        return contents
     },
     
-    getIndexedSig: async function (args) {
+    // testIPFS: async function () {
+    //     const cid = await caver.ipfs.add(target)
+    //     const contents = await caver.ipfs.add(target)
 
-    },
-
-    totalSupply: async function (args) {
-
-    },
-    
-    tokenOfOwnerByIndex: async function (args) {
-
-    },
-
-    tokenByIndex: async function (args) {
-
-    },
+    // },
     
 } 
 
 var funcArgs = SillockContractManager.parseArg()
 SillockContractManager.init()
+//SillockContractManager.addIPFSdata("./test.txt")
+// var data = SillockContractManager.getIPFSdata(cid)
+// console.log(data)
 SillockContractManager.executeFunc(funcArgs[0], funcArgs[1])
 
 module.exports = SillockContractManager
