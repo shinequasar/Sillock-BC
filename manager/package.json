@@ -4,12 +4,19 @@
   "description": "",
   "main": "sample.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
     "caver-js": "^1.5.7",
-    "minimist": "^1.2.5"
+    "caver-js-ext-kas": "^1.1.1",
+    "minimist": "^1.2.5",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "webpack-cli": "^4.5.0"
   }
 }

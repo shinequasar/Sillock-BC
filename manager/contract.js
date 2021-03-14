@@ -52,6 +52,11 @@ const SillockContractManager = {
                 var privateKey = fs.readFileSync("key/nonowner2.txt").toString()
                 keyring = caver.wallet.keyring.createFromPrivateKey(privateKey)
                 break
+
+            case 'cypress':
+                var privateKey = fs.readFileSync("key/cypress.txt").toString()
+                keyring = caver.wallet.keyring.createFromPrivateKey(privateKey)
+                break
             
             default:
                 try{
@@ -105,8 +110,8 @@ const SillockContractManager = {
                 console.log('MINT EMPTY CERT')
                 var addr = args[0]
                 var num  = caver.abi.encodeParameter('uint256',args[1])
-
-                value = await contractInstance.methods.mintEmptyCert(addr, num).send({ from:keyring.address, gas:'0x4bfd200' })
+                console.log(keyring.address)
+                value = await contractInstance.methods.mintEmptyCert(addr, num).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
 
@@ -129,7 +134,7 @@ const SillockContractManager = {
                 var exchangable = (args[3] == 'true')
                 var date    = args[4]
 
-                value = await contractInstance.methods.mintCert(name, holder, url, exchangable, date).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.mintCert(name, holder, url, exchangable, date).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
 
@@ -140,7 +145,7 @@ const SillockContractManager = {
                     console.log('invalid args length')
                 }
                 var tokenId = caver.abi.encodeParameter('uint256',args[0])
-                value = await contractInstance.methods.burnCert(tokenId).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.burnCert(tokenId).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
 
@@ -152,7 +157,7 @@ const SillockContractManager = {
                 }
                 var tokenId = caver.abi.encodeParameter('uint256',args[0])
                 var toAddr = args[1]
-                value = await contractInstance.methods.transferOwnership(tokenId, toAddr).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.transferOwnership(tokenId, toAddr).send({ from:keyring.address, gas:'8500000' })
                 
                 console.log(value)
                 return value
@@ -200,7 +205,7 @@ const SillockContractManager = {
                 }
                 var num = caver.abi.encodeParameter('uint256',args[0])
 
-                value = await contractInstance.methods.buyEmptyCert(num).send({ from:keyring.address, gas:'0x4bfd200', value:caver.utils.toPeb(1, 'KLAY')})
+                value = await contractInstance.methods.buyEmptyCert(num).send({ from:keyring.address, gas:'8500000', value:caver.utils.toPeb(1, 'KLAY')})
                 console.log(value)
                 return value
 
@@ -210,7 +215,7 @@ const SillockContractManager = {
                     console.log('invalid args length')
                 }
                 var orgAddr = args[0]
-                value = await contractInstance.methods.authorize(orgAddr).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.authorize(orgAddr).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
 
@@ -220,7 +225,7 @@ const SillockContractManager = {
                     console.log('invalid args length')
                 }
                 var orgAddr = args[0]
-                value = await contractInstance.methods.deauthorize(orgAddr).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.deauthorize(orgAddr).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
 
@@ -231,7 +236,7 @@ const SillockContractManager = {
                 }
                 var tokenId = caver.abi.encodeParameter('uint256',args[0])
                 var sig     = args[1]
-                value = await contractInstance.methods.addSig(tokenId, sig).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.addSig(tokenId, sig).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
 
@@ -266,7 +271,7 @@ const SillockContractManager = {
                 console.log('ChangeFee')
                 var num   = caver.abi.encodeParameter('uint256',args[0])
 
-                value = await contractInstance.methods.changeFee(num).send({ from:keyring.address, gas:'0x4bfd200' })
+                value = await contractInstance.methods.changeFee(num).send({ from:keyring.address, gas:'8500000' })
                 console.log(value)
                 return value
     
