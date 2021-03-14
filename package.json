@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "dev": "webpack-dev-server --hot"
   },
   "repository": {
     "type": "git",
@@ -20,7 +22,15 @@
   },
   "homepage": "https://github.com/sillock/SILLOCK-Contract#readme",
   "dependencies": {
-    "caver-js": "^1.5.6",
-    "truffle-hdwallet-provider-klaytn": "^1.0.13-a"
+    "caver-js": "^1.5.7",
+    "copy-webpack-plugin": "^4.6.0",
+    "elliptic": "^6.5.4",
+    "minimist": "^1.2.5",
+    "qrcode": "^1.4.4",
+    "truffle-assertions": "^0.9.2",
+    "truffle-hdwallet-provider-klaytn": "^1.0.13-a",
+    "webpack": "^4.7.0",
+    "webpack-cli": "^3.1.1",
+    "webpack-dev-server": "^3.1.4"
   }
 }
