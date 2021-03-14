@@ -355,9 +355,9 @@ const App = {
       var myAddr = JSON.parse(walletFromSession)._address
       console.log(myAddr)
 
-      var value = await this.contractInstance.methods.mintEmptyCert(addr, num).send({ from:myAddr, gas:'0x4bfd200' })
+      var value = await this.contractInstance.methods.mintEmptyCert(addr, num).send({ from:myAddr, gas:'8500000' })
       console.log(value)
-      value = await contractInstance.methods.returnEmptyCert(addr).call()
+      value = await this.contractInstance.methods.returnEmptyCert(addr).call()
       $('#emptyMintMessage').text(`${addr} can mint ${value} certs`)
       
     },
