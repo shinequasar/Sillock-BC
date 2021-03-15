@@ -269,7 +269,6 @@ const App = {
           '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
         return !!pattern.test(str);
       }
-
       for (let index = 0; index < certList.length; index++) {
         const element = certList[index];
         if (element['issuer'] == sessionStorage.getItem('klipAddress')) {
@@ -330,8 +329,8 @@ const App = {
               </div></div>"
             }
           }
-
           $("#getAllCertModal").append(card)
+          $("#Listlength").text($(".card").length)
         }
       }
 
