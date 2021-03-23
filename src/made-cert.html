@@ -29,7 +29,7 @@
     <script src="index.js"></script>
 
     <!--pdf-->
-    <script type = "text/javascript" src = "http://code.jquery.com/jquery-latest.min.js"></script> //제이쿼리
+    <script type = "text/javascript" src = "http://code.jquery.com/jquery-latest.min.js"></script> 
     <script type = "text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
     <script type = "text/javascript" src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
@@ -40,7 +40,7 @@
  <nav class="navbar navbar-dark" style="background-color: #2A3BFF;">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            <img src="C:\Users\shine\Desktop\SILLOCK-BC\src\수료증배경.jpg" alt="" width="30" height="24"
+            <img src="http://www.sillock.me/image/logo.svg" alt="" width="30" height="24"
                 class="d-inline-block align-top">
             Sillock
         </a>
@@ -55,9 +55,9 @@
             <h1 style="font-size: 2.5em; font-weight: bold;">발행증명서 미리보기</h1><br>
             <button class="btn btn-warning mb-3" id="create_pdf" >발행하기</button>
         </div>
-        <div style="position: absolute; left:50%; transform:translateX(-50%);"  id="pdf_wrap">
-            <img src="https://i.ibb.co/hx6qLx9/image.jpg" style="width:660px; height: 1000x;">
-            <div style="left:100px; width: 550px; bottom: 850px; font-size: 1.5em; font-weight: bold; position: relative;" >
+        <div style="position: absolute; left:50%; transform:translateX(-50%); width:700px;"  id="pdf_wrap">
+            <img src="\src\img\backImg.jpg" alt="배경" style="width:680px; height: 900px;" />
+            <div style="left:120px; width: 580px; bottom: 800px; font-size: 1.5em; font-weight: bold; position: relative;" >
                 <script>
                     axios({
                         method: 'get',
@@ -95,13 +95,15 @@
             </div>
             <script>
                 $('#create_pdf').click(function() {
-                //pdf_wrap을 canvas객체로 변환
-                html2canvas($('#pdf_wrap')[0]).then(function(canvas) {
-                    var doc = new jsPDF('p', 'mm', 'a4'); //jspdf객체 생성
-                    var imgData = canvas.toDataURL('image/png'); //캔버스를 이미지로 변환
-                    doc.addImage(imgData, 'PNG', 0, 0); //이미지를 기반으로 pdf생성
-                    doc.save('sample_수료증.pdf'); //pdf저장
-                });
+                    //pdf_wrap을 canvas객체로 변환
+                    html2canvas($('#pdf_wrap')[0]).then(function(canvas) {
+                        var doc = new jsPDF('p', 'mm', 'a4'); //jspdf객체 생성
+                        var imgWidth = 180;
+                        var imgHeight = canvas.height * imgWidth / canvas.width;
+                        var imgData = canvas.toDataURL('image/png'); //캔버스를 이미지로 변환
+                        doc.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight); //이미지를 기반으로 pdf생성
+                        doc.save('sample-수료증.pdf'); //pdf저장
+                    });
                 });
             </script>
     </div>
