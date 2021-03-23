@@ -27,6 +27,11 @@
     <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="index.js"></script>
+
+    <!--pdf-->
+    <script type = "text/javascript" src = "http://code.jquery.com/jquery-latest.min.js"></script> //제이쿼리
+    <script type = "text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+    <script type = "text/javascript" src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
 
     </style>
@@ -35,7 +40,7 @@
  <nav class="navbar navbar-dark" style="background-color: #2A3BFF;">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            <img src="http://www.sillock.me/image/logo.svg" alt="" width="30" height="24"
+            <img src="C:\Users\shine\Desktop\SILLOCK-BC\src\수료증배경.jpg" alt="" width="30" height="24"
                 class="d-inline-block align-top">
             Sillock
         </a>
@@ -43,36 +48,63 @@
             data-target="#klipLoginModal" onclick="App.klipLogin()">Klip Login</button>
     </div>
 </nav>
-    <div class="container-md mt-5">
+</head>
+<body>
+    <div class="container-md mt-5" >
         <div class="text-center"  class="text-center">
             <h1 style="font-size: 2.5em; font-weight: bold;">발행증명서 미리보기</h1><br>
-            <button type="button" class="btn btn-warning mb-3" onclick = "location.href = 'made-cert.html'"" >발행하기</button>
+            <button class="btn btn-warning mb-3" id="create_pdf" >발행하기</button>
         </div>
-        <div style="position: absolute; left:50%; transform:translateX(-50%);" class="text-center">
-            <img src="https://i.ibb.co/hx6qLx9/image.jpg">
-            <div style="left:100px; width: 450px; bottom: 500px; font-size: 1.8em; font-weight: bold; position: relative;" class="text-center">
+        <div style="position: absolute; left:50%; transform:translateX(-50%);"  id="pdf_wrap">
+            <img src="https://i.ibb.co/hx6qLx9/image.jpg" style="width:660px; height: 1000x;">
+            <div style="left:100px; width: 550px; bottom: 850px; font-size: 1.5em; font-weight: bold; position: relative;" >
+                <script>
+                    axios({
+                        method: 'get',
+                        url: 'https://66efd3ee-b1cc-4780-9b6b-74f61045e2bf.mock.pstmn.io/cert',
+                        responseType: 'json'
+                    })
+                        .then(function (response) {
+                            console.log(response);
+                            document.getElementById("mynum").innerHTML = response.data.mynum;
+                            document.getElementById("name").innerHTML = response.data.name;
+                            document.getElementById("holder").innerHTML = response.data.holder;
+                            document.getElementById("process").innerHTML = response.data.process;
+                            document.getElementById("period").innerHTML = response.data.period;
+                            document.getElementById("date").innerHTML = response.data.date;
+                    });
+        
+                </script>
+            <small>수료번호 : <small id="mynum"></small></small><br><br>
+            <div style="width: 450px; " class="text-center">
+                <p class="text-center" style="font-size: 50px;">수료증</p><br>
+            </div>
+            
+                <p >성   명 : <span id="name"></span></p>
+                <p >소   속 : <span id="holder"></span></p>
+                <p >교육과정 : <span id="process"></span></p>
+                <p >교육기간 : <span id="period"></span></p><br>
+                <div style="width: 400px; left:100px; " class="text-center">
+                    귀하는 한국인터넷진흥원에서 실시한 상기 교육과정을 수료하였기에 이 증서를 수여합니다.<br><br>
+                    <p ><span id="date"></span></p>
+                </div>
+                
+                
+            </div>
+            
+            </div>
             <script>
-                axios({
-                    method: 'get',
-                    url: 'https://66efd3ee-b1cc-4780-9b6b-74f61045e2bf.mock.pstmn.io/cert',
-                    responseType: 'json'
-                })
-                    .then(function (response) {
-                        console.log(response);
-                        document.getElementById("name").innerHTML = response.data.name;
+                $('#create_pdf').click(function() {
+                //pdf_wrap을 canvas객체로 변환
+                html2canvas($('#pdf_wrap')[0]).then(function(canvas) {
+                    var doc = new jsPDF('p', 'mm', 'a4'); //jspdf객체 생성
+                    var imgData = canvas.toDataURL('image/png'); //캔버스를 이미지로 변환
+                    doc.addImage(imgData, 'PNG', 0, 0); //이미지를 기반으로 pdf생성
+                    doc.save('sample_수료증.pdf'); //pdf저장
                 });
-      
+                });
             </script>
-                <p >이름 : <span id="name"></span></p>
-                <p >이름 : <span id="name"></span></p>
-                <p >이름 : <span id="name"></span></p>
-                <p >이름 : <span id="name"></span></p>
-                <p >이름 : <span id="name"></span></p>
-            </div>
-            
-            </div>
-            
     </div>
-        </head>
+    </body>  
     </html>
     
