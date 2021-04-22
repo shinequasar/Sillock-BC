@@ -101,7 +101,7 @@
                         var imgWidth = 180;
                         var imgHeight = canvas.height * imgWidth / canvas.width;
                         var imgData = canvas.toDataURL('image/png'); //캔버스를 이미지로 변환
-                        doc.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight); //이미지를 기반으로 pdf생성
+                        doc.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight); //이미지를 기반으로 pdf생성, addImage 파라미터로 여백 주기(x,y)
                         doc.save('sample-수료증.pdf'); //pdf저장
                     });
                 });
